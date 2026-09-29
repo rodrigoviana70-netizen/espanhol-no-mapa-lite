@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Espanhol no Mapa — Área de Membros</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#FAF6EC; --ink:#1C2541; --ink-soft:#5A6388;
+  --gold:#F4B740; --coral:#E8604C;
+  --card-bg:#FFFFFF; --card-border:#E7DFC9; --radius:16px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#141830; --ink:#F3EFE3; --ink-soft:#B7BEDC; --card-bg:#1E2444; --card-border:#2E3560;
+  }
+}
+:root[data-theme="dark"]{--bg:#141830;--ink:#F3EFE3;--ink-soft:#B7BEDC;--card-bg:#1E2444;--card-border:#2E3560;}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth; scroll-padding-top:calc(96px + env(safe-area-inset-top,0px));}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'Inter',sans-serif;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);}
+h1,h2,h3{font-family:'Baloo 2',sans-serif;margin:0}
+
+header{padding:30px 20px 16px;text-align:center}
+.spiral{display:flex;justify-content:center;gap:6px;margin-bottom:12px}
+.spiral span{width:7px;height:7px;border-radius:50%;background:var(--ink);opacity:.25}
+header h1{font-size:clamp(22px,5vw,32px)}
+header p{color:var(--ink-soft);margin-top:6px;font-size:14.5px}
+
+nav{position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--card-border);
+  padding-top:env(safe-area-inset-top,0px)}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:10px 16px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{flex:0 0 auto;border:1px solid var(--card-border);background:var(--card-bg);color:var(--ink);
+  padding:9px 16px;border-radius:999px;font:600 13.5px 'Inter';cursor:pointer;white-space:nowrap}
+.tabs button.active{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+main{max-width:1080px;margin:0 auto;padding:24px 16px 60px}
+section.level{margin-bottom:44px;scroll-margin-top:100px}
+section.level .head{margin-bottom:14px}
+section.level h2{font-size:21px}
+section.level .sub{color:var(--ink-soft);font-size:13.5px;margin-top:3px}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(172px,1fr));gap:14px}
+.card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius);
+  overflow:hidden;cursor:pointer;transition:transform .15s,box-shadow .15s}
+.card:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(28,37,65,.12)}
+.card:focus-visible{outline:3px solid var(--coral);outline-offset:2px}
+.cover{aspect-ratio:3/2;background:linear-gradient(135deg,rgba(244,183,64,.20),rgba(232,96,76,.12));
+  display:flex;align-items:center;justify-content:center;position:relative;
+  border-bottom:1px dashed var(--card-border)}
+.cover img{width:100%;height:100%;object-fit:cover;display:block}
+.cover .placeholder{font:700 12.5px 'Baloo 2';color:var(--ink-soft);text-align:center;padding:0 10px;line-height:1.4}
+.cover .badge{position:absolute;top:8px;right:8px;background:var(--ink);color:var(--bg);
+  font-size:9.5px;padding:3px 8px;border-radius:999px}
+.card-body{padding:11px 13px 15px}
+.card-body h3{font-size:14.5px}
+.card-body p{margin:4px 0 0;font-size:12px;color:var(--ink-soft);line-height:1.4}
+
+footer{text-align:center;padding:30px 16px 50px;color:var(--ink-soft);font-size:12px}
+
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translate(-50%,12px);
+  background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:13px;
+  opacity:0;pointer-events:none;transition:.25s;max-width:88%;text-align:center}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* modal / lista dentro do card */
+.card .count{display:inline-block;margin-top:8px;font-size:11px;font-weight:600;color:var(--coral)}
+#overlay{position:fixed;inset:0;background:rgba(10,14,30,.55);display:none;align-items:flex-end;justify-content:center;z-index:50}
+#overlay.open{display:flex}
+.sheet{background:var(--bg);color:var(--ink);width:100%;max-width:480px;border-radius:22px 22px 0 0;
+  padding:20px 18px calc(22px + env(safe-area-inset-bottom,0px));animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+@media(min-width:600px){#overlay{align-items:center}.sheet{border-radius:22px}}
+.sheet .top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.sheet h3{font-size:20px}
+.sheet .x{border:0;background:var(--card-bg);color:var(--ink);width:34px;height:34px;border-radius:50%;font-size:18px;cursor:pointer}
+.sheet .sub{color:var(--ink-soft);font-size:13px;margin-bottom:14px}
+.item{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;text-align:left;
+  background:var(--card-bg);border:1px solid var(--card-border);border-radius:14px;padding:14px 16px;margin-bottom:10px;
+  color:var(--ink);font-family:inherit;cursor:pointer}
+.item:hover{border-color:var(--gold)}
+.item b{font:600 16px 'Baloo 2'}
+.item small{display:block;color:var(--ink-soft);font-size:12px;margin-top:2px}
+.item .go{font-size:12px;font-weight:600;background:var(--gold);color:#1C2541;padding:6px 12px;border-radius:999px;white-space:nowrap}
+.item .go.off{background:var(--card-border);color:var(--ink-soft)}
+
+/* leitor de PDF dentro da área */
+#viewer{position:fixed;inset:0;z-index:100;background:var(--bg);display:none;flex-direction:column}
+#viewer.open{display:flex}
+.vbar{display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top,0px)) 12px 10px;
+  border-bottom:1px solid var(--card-border);background:var(--bg)}
+.vbar .back{border:0;background:var(--ink);color:var(--bg);font:600 13px 'Inter';padding:9px 14px;border-radius:999px;cursor:pointer;white-space:nowrap}
+.vbar .vt{flex:1;min-width:0;font:600 16px 'Baloo 2';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:center}
+.vdownload{display:flex;justify-content:center;padding:10px 12px;border-bottom:1px solid var(--card-border);background:var(--bg)}
+.btn-download{display:inline-flex;align-items:center;gap:7px;background:var(--gold);color:#1C2541;font:700 13.5px 'Baloo 2';padding:11px 20px;border-radius:999px;text-decoration:none}
+#vframe{flex:1;width:100%;border:0;background:#fff;padding-bottom:env(safe-area-inset-bottom,0px)}
+.card.locked .cover img{filter:blur(5px) saturate(.75);opacity:.9}
+.lock-overlay{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:12px;text-align:center}
+.lock-pill{background:#fff;color:var(--ink);font:700 12px 'Inter';padding:6px 14px;border-radius:999px;box-shadow:0 3px 10px rgba(20,24,48,.18);display:inline-flex;align-items:center;gap:5px}
+.lock-msg{background:rgba(255,255,255,.94);color:var(--ink);font-size:10.5px;line-height:1.35;padding:8px 10px;border-radius:12px;max-width:92%}
+:root[data-theme="dark"] .lock-pill,:root[data-theme="dark"] .lock-msg{background:rgba(30,36,68,.94);color:var(--ink)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .lock-pill,:root:not([data-theme="light"]) .lock-msg{background:rgba(30,36,68,.94);color:var(--ink)}}
+.unlock-btn{margin-top:10px;width:100%;padding:9px;border:0;border-radius:999px;background:var(--gold);color:#1C2541;font:700 12.5px 'Baloo 2';cursor:pointer}
+
+/* modal de chave de acesso */
+#keyOverlay{position:fixed;inset:0;background:rgba(10,14,30,.55);display:none;align-items:flex-end;justify-content:center;z-index:50}
+#keyOverlay.open{display:flex}
+@media(min-width:600px){#keyOverlay{align-items:center}}
+.key-icon{width:46px;height:46px;border-radius:50%;background:rgba(244,183,64,.18);color:var(--gold);
+  display:flex;align-items:center;justify-content:center;font-size:20px;margin:0 auto 10px}
+.field-label{display:block;font-size:12.5px;font-weight:600;color:var(--ink-soft);margin:16px 2px 6px}
+.key-input{width:100%;padding:13px 14px;border-radius:12px;border:1px solid var(--card-border);
+  background:var(--card-bg);color:var(--ink);font:500 15px 'Inter';outline:none}
+.key-input:focus{border-color:var(--gold)}
+.key-error{color:var(--coral);font-size:12.5px;margin-top:8px;display:none}
+.btn-primary{width:100%;margin-top:14px;padding:13px;border:0;border-radius:999px;background:var(--gold);
+  color:#1C2541;font:700 15px 'Baloo 2';cursor:pointer}
+.btn-buy{display:block;width:100%;margin-top:10px;padding:13px;border-radius:999px;background:#22A559;
+  color:#fff;text-align:center;font:700 14.5px 'Inter';text-decoration:none;box-sizing:border-box}
+.support-link{text-align:center;margin-top:16px}
+.support-link a{color:var(--ink-soft);font-size:12.5px;text-decoration:underline;cursor:pointer}
+</style>
+</head>
+<body>
+<header>
+  <div class="spiral"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+  <h1>📍 Espanhol no Mapa</h1>
+  <p>Área de Membros — seu material completo do A1 ao C2</p>
+</header>
+
+<nav><div class="tabs" id="tabs"></div></nav>
+<main id="sections"></main>
+
+<footer>Espanhol no Mapa · Acesso vitalício · Qualquer dúvida, fale com o suporte.</footer>
+<div id="overlay"><div class="sheet" role="dialog" aria-modal="true">
+  <div class="top"><h3 id="sTitle"></h3><button class="x" id="sClose" aria-label="Fechar">✕</button></div>
+  <div class="sub" id="sSub"></div><div id="sList"></div></div></div>
+<div id="viewer" role="dialog" aria-modal="true">
+  <div class="vbar"><button class="back" id="vBack">‹ Voltar</button><div class="vt" id="vTitle"></div><span style="width:78px;flex:none"></span></div>
+  <div class="vdownload"><a id="vDownload" class="btn-download" target="_blank" rel="noopener">⬇ Baixar tudo em PDF</a></div>
+  <iframe id="vframe" title="Material" allow="fullscreen"></iframe>
+</div>
+<div id="keyOverlay"><div class="sheet" role="dialog" aria-modal="true">
+  <div class="top"><span></span><button class="x" id="uClose" aria-label="Fechar">✕</button></div>
+  <div style="text-align:center">
+    <div class="key-icon">🔑</div>
+    <h3>Desbloquear material</h3>
+    <div class="sub" id="uSubtitle" style="margin-top:6px"></div>
+  </div>
+  <label class="field-label" for="uInput">Chave de acesso</label>
+  <input id="uInput" type="text" placeholder="Digite sua chave" class="key-input" autocomplete="off">
+  <div id="uError" class="key-error"></div>
+  <button id="uUnlockBtn" class="btn-primary" type="button">Desbloquear</button>
+  <a id="uBuy" class="btn-buy" target="_blank" rel="noopener">Adquirir</a>
+  <div class="support-link"><a href="#" id="uSupport">Não tenho a chave, falar com suporte</a></div>
+</div></div>
+<div id="toast"></div>
+
+<script>
+/* ====== EDITE AQUI ======
+   cover: URL da imagem da capa (proporção 3:2, igual ao exemplo A1-A2)
+   pdf:   link do PDF. Enquanto vazio, aparece "em breve".
+   Cards com "items" abrem uma lista (ex.: A1 e A2); cards sem "items" abrem o PDF direto. */
+// Link de suporte (ex.: WhatsApp) mostrado em "Não tenho a chave, falar com suporte". Deixe "" para desativar.
+const SUPPORT_URL = "";
+// Cada material bloqueado tem accessKey (chave que você envia por e-mail ao comprador) e buyUrl (link de checkout).
+// Quando o aluno digita a chave correta, o desbloqueio fica salvo no navegador dele (localStorage).
+// Para liberar um material extra para todo mundo: coloque o link em pdf e troque locked:true por locked:false
+const DATA = {
+  niveis: { label:"Níveis", desc:"Mapas mentais do A1 ao C2", cards:[
+    {title:"A1 – A2", desc:"Base essencial do espanhol", cover:"capas/a1-a2.jpg", items:[
+      {title:"Nível A1", desc:"Fundamentos do espanhol", pdf:"https://drive.google.com/file/d/1oRYaTHwQurvN0AwpY91b7rUaLuWX4yye/view"},
+      {title:"Nível A2", desc:"Consolidando as bases", pdf:"https://drive.google.com/file/d/1Qz7oAWGSLo0oCufTc34PyjJ6V1ImFema/view"}]},
+    {title:"B1 – B2", desc:"Espanhol intermediário", cover:"capas/b1-b2.jpg", items:[
+      {title:"Nível B1", desc:"Comunicação com autonomia", pdf:"https://drive.google.com/file/d/1q5NOH-5j7lNBN6Z2zbonYcjvwVr6dt5e/view"},
+      {title:"Nível B2", desc:"Fluência em situações reais", pdf:"https://drive.google.com/file/d/1pB4oCew69Lbb_37Pi9qjRwgcGIzKF_KV/view"}]},
+    {title:"C1 – C2", desc:"Espanhol avançado e domínio", cover:"capas/c1-c2.jpg", items:[
+      {title:"Nível C1", desc:"Precisão e nuance", pdf:"https://drive.google.com/file/d/17leK5Klm1dC2P1tAQCdOgM6hOd4RhjHk/view"},
+      {title:"Nível C2", desc:"Domínio completo do espanhol", pdf:"https://drive.google.com/file/d/1XNZovlW-bKhN9jrzvz41Klj-OXJ7ile9/view"}]},
+  ]},
+  bonus: { label:"Bônus", desc:"Materiais extras inclusos no seu kit", cards:[
+    {title:"50 Exercícios", desc:"Fixação de vocabulário e estruturas", cover:"capas/50-exercicios.jpg", pdf:"https://drive.google.com/file/d/1QtXbStmt8Pv1Z6aIXVVga9HXVaEnzfxa/view"},
+    {title:"100 Expressões Essenciais", desc:"Frases úteis do dia a dia", cover:"capas/100-expressoes.jpg", pdf:"https://drive.google.com/file/d/13GEgPYVrIvv6lEXp5RszX7kUrLshZBHC/view"},
+    {title:"200 Frases para Conversação", desc:"Pratique conversação real", cover:"capas/200-frases.jpg", pdf:"https://drive.google.com/file/d/13Hs0PTp-0dY_zc7Vp3E1f6OsjPmbiGqn/view"},
+    {title:"Espanhol para Viajar", desc:"Aeroporto, hotel, restaurante e mais", cover:"capas/espanhol-viajar.jpg", pdf:"https://drive.google.com/file/d/1zaeWQgP6oewBB08W6JETCA8H134TKwkx/view"},
+    {title:"Guia de Pronúncia", desc:"Sons e entonação do espanhol", cover:"capas/guia-pronuncia.jpg", pdf:"https://drive.google.com/file/d/1GR-h6xr5BRgQ7IvEpNp032I3R_EJ8hGv/view"},
+  ]},
+  extra: { label:"🔒 Material extra", desc:"Conteúdos premium — desbloqueie para acessar", cards:[
+    {title:"50 Treinos de Conversação Guiada", desc:"Treine falando com roteiros passo a passo", cover:"capas/50-treinos.jpg", pdf:"https://drive.google.com/file/d/1GMK2g_Wi3_cpLXDhQyuxV8wzIOGQCchh/view", locked:true, accessKey:"50TREINOS-YNYXBD", buyUrl:"https://pay.cakto.com.br/35wvzab"},
+    {title:"Flashcards de Espanhol", desc:"Revise vocabulário de forma rápida", cover:"capas/flashcards.jpg", pdf:"https://drive.google.com/file/d/1SMSN9JySOjPCR1_UytxWU8hQDCLFB1Cy/view", locked:true, accessKey:"FLASHCARDS-APUQM2", buyUrl:"https://pay.cakto.com.br/3ehp7jo"},
+    {title:"Desafio de 30 Dias para Falar Espanhol", desc:"Um mês de prática diária", cover:"capas/desafio-30-dias.jpg", pdf:"https://drive.google.com/file/d/1WJ1t6quLqaXJgUc4z2uJRq29130D93f1/view", locked:true, accessKey:"DESAFIO30-RMZ5VF", buyUrl:"https://pay.cakto.com.br/cbfip9m_1135841"},
+    {title:"100 Exercícios", desc:"Fixe o conteúdo com muita prática", cover:"capas/100-exercicios.jpg", pdf:"https://drive.google.com/file/d/1BG2XA5bNS0Ocx9EcsUKkJAIw2JdW_2Up/view", locked:true, accessKey:"100EXERC-C73CJS", buyUrl:"https://pay.cakto.com.br/ranjda3"},
+  ]}
+};
+
+function keyFor(c){ return 'enm_unlocked_'+encodeURIComponent(c.title); }
+function isUnlocked(c){ return !c.locked || localStorage.getItem(keyFor(c))==='1'; }
+
+function buildCardEl(c){
+  const stillLocked = c.locked && !isUnlocked(c);
+  const soon = !stillLocked && (c.items ? c.items.every(i=>!i.pdf) : !c.pdf);
+  const el=document.createElement('div');
+  el.className='card'+(stillLocked?' locked':''); el.tabIndex=0; el.setAttribute('role','button'); el.setAttribute('aria-label',c.title);
+  el.innerHTML=`<div class="cover">${c.cover?`<img src="${c.cover}" alt="${c.title}">`:`<div class="placeholder">+ Capa<br>${c.title}</div>`}
+      ${stillLocked?`<div class="lock-overlay"><span class="lock-pill">🔒 Bloqueado</span><div class="lock-msg">Comprou este material? Sua chave foi enviada por e-mail (confira o spam).</div></div>`:''}
+      ${soon?'<span class="badge">em breve</span>':''}</div>
+    <div class="card-body"><h3>${c.title}</h3><p>${c.desc}</p>${c.items?`<span class="count">${c.items.length} materiais ›</span>`:''}
+      ${stillLocked?'<button class="unlock-btn" type="button">🔑 Inserir chave</button>':''}</div>`;
+  const im=el.querySelector('.cover img');
+  if(im) im.onerror=()=>{im.replaceWith(Object.assign(document.createElement('div'),{className:'placeholder',innerHTML:'+ Capa<br>'+c.title}))};
+  const activate=()=>{
+    if(stillLocked) return openUnlock(c, el);
+    if(!c.items) return openPdf(c);
+    openList(c);
+  };
+  el.addEventListener('click',activate);
+  el.addEventListener('keydown',e=>{if(e.key==='Enter')activate()});
+  return el;
+}
+
+function render(){
+  const tabs=document.getElementById('tabs'), main=document.getElementById('sections');
+  Object.entries(DATA).forEach(([key,sec])=>{
+    const btn=document.createElement('button');
+    btn.textContent=sec.label;
+    btn.onclick=()=>document.getElementById(key).scrollIntoView({behavior:'smooth'});
+    tabs.appendChild(btn);
+
+    const s=document.createElement('section');
+    s.className='level'; s.id=key;
+    s.innerHTML=`<div class="head"><h2>${sec.label}</h2><div class="sub">${sec.desc}</div></div><div class="grid"></div>`;
+    const grid=s.querySelector('.grid');
+    sec.cards.forEach(c=>grid.appendChild(buildCardEl(c)));
+    main.appendChild(s);
+  });
+}
+
+function embedUrl(u){
+  const m=u.match(/drive\.google\.com\/file\/d\/([^\/?#]+)/);
+  return m?`https://drive.google.com/file/d/${m[1]}/preview`:u;
+}
+function downloadUrl(u){
+  const m=u.match(/drive\.google\.com\/file\/d\/([^\/?#]+)/);
+  return m?`https://drive.google.com/uc?export=download&id=${m[1]}`:u;
+}
+function openPdf(x){
+  if(!x.pdf) return toast(`"${x.title}" ainda sem PDF configurado.`);
+  closeSheet();
+  document.getElementById('vTitle').textContent=x.title;
+  document.getElementById('vDownload').href=downloadUrl(x.pdf);
+  document.getElementById('vframe').src=embedUrl(x.pdf);
+  document.getElementById('viewer').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeViewer(){
+  document.getElementById('viewer').classList.remove('open');
+  document.getElementById('vframe').src='about:blank';
+  document.body.style.overflow='';
+}
+document.getElementById('vBack').onclick=closeViewer;
+
+function openList(c){
+  document.getElementById('sTitle').textContent=c.title;
+  document.getElementById('sSub').textContent=c.desc;
+  const list=document.getElementById('sList'); list.innerHTML='';
+  c.items.forEach(it=>{
+    const b=document.createElement('button'); b.className='item';
+    b.innerHTML=`<span><b>${it.title}</b><small>${it.desc||''}</small></span><span class="go ${it.pdf?'':'off'}">${it.pdf?'Abrir':'Em breve'}</span>`;
+    b.onclick=()=>openPdf(it);
+    list.appendChild(b);
+  });
+  document.getElementById('overlay').classList.add('open');
+}
+function closeSheet(){document.getElementById('overlay').classList.remove('open')}
+document.getElementById('sClose').onclick=closeSheet;
+document.getElementById('overlay').addEventListener('click',e=>{if(e.target.id==='overlay')closeSheet()});
+
+/* ---- modal de chave de acesso ---- */
+let currentUnlockCard=null, currentUnlockEl=null;
+function openUnlock(c, el){
+  currentUnlockCard=c; currentUnlockEl=el;
+  document.getElementById('uSubtitle').innerHTML=`Digite a chave de acesso enviada para o seu e-mail para desbloquear <b>${c.title}</b>.`;
+  document.getElementById('uInput').value='';
+  document.getElementById('uError').style.display='none';
+  document.getElementById('uBuy').href=c.buyUrl||'#';
+  document.getElementById('keyOverlay').classList.add('open');
+  setTimeout(()=>document.getElementById('uInput').focus(),50);
+}
+function closeUnlock(){ document.getElementById('keyOverlay').classList.remove('open'); }
+document.getElementById('uClose').onclick=closeUnlock;
+document.getElementById('keyOverlay').addEventListener('click',e=>{if(e.target.id==='keyOverlay')closeUnlock()});
+document.getElementById('uUnlockBtn').onclick=()=>{
+  const c=currentUnlockCard; if(!c) return;
+  const val=document.getElementById('uInput').value.trim();
+  const errEl=document.getElementById('uError');
+  if(val && c.accessKey && val.toLowerCase()===String(c.accessKey).toLowerCase()){
+    localStorage.setItem(keyFor(c),'1');
+    closeUnlock();
+    toast('Material desbloqueado! ✅');
+    if(currentUnlockEl) currentUnlockEl.replaceWith(buildCardEl(c));
+  }else{
+    errEl.textContent='Chave inválida. Confira seu e-mail e tente novamente.';
+    errEl.style.display='block';
+  }
+};
+document.getElementById('uInput').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('uUnlockBtn').click()});
+document.getElementById('uSupport').onclick=(e)=>{
+  e.preventDefault();
+  SUPPORT_URL?window.open(SUPPORT_URL,'_blank','noopener'):toast('Link de suporte ainda não configurado.');
+};
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeViewer();closeSheet();closeUnlock()}});
+
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(window._tt); window._tt=setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+render();
+</script>
+</body>
+</html>
